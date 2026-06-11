@@ -47,3 +47,44 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
 }
+
+resource "aws_security_group" "bastion" {
+  name   = "bastion"
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "bastion_ssh" {
+  security_group_id = aws_security_group.bastion.id
+
+  cidr_ipv4   = "${var.my_ip}/32"
+  from_port   = 22
+  to_port     = 22
+  ip_protocol = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "bastion_all" {
+  security_group_id = aws_security_group.bastion.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "-1"
+}
+
+resource "aws_security_group" "api" {
+  name   = "api"
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "api_ssh" {
+  security_group_id            = aws_security_group.api.id
+  referenced_security_group_id = aws_security_group.bastion.id
+
+  from_port   = 22
+  to_port     = 22
+  ip_protocol = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "api_all" {
+  security_group_id = aws_security_group.api.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
