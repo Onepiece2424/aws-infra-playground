@@ -31,9 +31,9 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = "ap-northeast-1a"
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "ap-northeast-1a"
 
   map_public_ip_on_launch = false
 
@@ -113,10 +113,11 @@ data "aws_ami" "amazon_linux" {
 }
 
 resource "aws_instance" "bastion" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t3.micro"
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t3.micro"
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.bastion.id]
+  key_name               = aws_key_pair.deployer.key_name
 
   tags = {
     Name = "bastion-instance"
@@ -124,12 +125,18 @@ resource "aws_instance" "bastion" {
 }
 
 resource "aws_instance" "api" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t3.micro"
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t3.micro"
   subnet_id              = aws_subnet.private.id
   vpc_security_group_ids = [aws_security_group.api.id]
+  key_name               = aws_key_pair.deployer.key_name
 
   tags = {
     Name = "api-instance"
   }
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = var.key_name
+  public_key = file(var.public_key_path)
 }
