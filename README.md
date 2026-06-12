@@ -6,6 +6,10 @@ Terraform を使って AWS 上にセキュアなネットワーク構成を IaC 
 ---
 
 ## アーキテクチャ概要
+### インフラ構成図
+
+![インフラ構成図](images/aws-infra-playgroundインフラ構成図.png)
+
 
 ```
 Internet
